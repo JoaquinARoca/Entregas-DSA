@@ -13,6 +13,7 @@ import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 import android.view.View;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -21,8 +22,9 @@ import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
     List<String> operation = new LinkedList<String>();
-    boolean radians = true,trig=false,mathe=false;
+    boolean radians = true,trig=false,mathe=false,result=false;
     String dummy="";
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -46,13 +48,22 @@ public class MainActivity extends AppCompatActivity {
         String btnclc = ((Button) v).getText().toString();
         TextView Tv = findViewById(R.id.screenTxt);
 
+        if(result){
+            dummy = "";
+            operation.clear();
+            Tv.setText("");
+            result = false;
+        }
+
         if(btnclc.equals("AC")){
             Tv.setText("");
             dummy ="";
             operation.clear();
             trig = false;
+            mathe = false;
+            result = false;
         } else if (btnclc.equals("sin") || btnclc.equals("cos") || btnclc.equals("tan") || btnclc.equals(")")) {
-            if(btnclc.equals(")") && trig==true){
+            if(btnclc.equals(")") && trig){
                 trig = false;
                 operation.add(dummy);
                 dummy ="";
@@ -73,31 +84,41 @@ public class MainActivity extends AppCompatActivity {
             }
 
         } else if (btnclc.equals("Back")) {
-
-            if(trig==true){
-                trig=false;
-                operation.remove(operation.size()-2);
-                String nop = String.join(", ",operation).replace(",","").replace(" ","");
-                Tv.setText(nop);
-            } else if (mathe==true && operation.get(operation.size()-1).equals(")")){
-                mathe = false;
-                operation.remove(operation.size()-1);
-                String nop = String.join(", ",operation).replace(",","").replace(" ","");
-                Tv.setText(nop);
-            } else {
-                operation.remove(operation.size()-1);
-                String nop = String.join(", ",operation).replace(",","").replace(" ","");
-                Tv.setText(nop);
+            if(!operation.isEmpty()){
+                if(trig){
+                    trig=false;
+                    operation.remove(operation.size()-2);
+                    String nop = String.join(", ",operation).replace(",","").replace(" ","");
+                    Tv.setText(nop);
+                } else if (mathe && operation.get(operation.size()-1).equals(")")){
+                    mathe = false;
+                    operation.remove(operation.size()-1);
+                    String nop = String.join(", ",operation).replace(",","").replace(" ","");
+                    Tv.setText(nop);
+                } else {
+                    operation.remove(operation.size()-1);
+                    String nop = String.join(", ",operation).replace(",","").replace(" ","");
+                    Tv.setText(nop);
+                }
+            }else{
+                Toast.makeText(this, "is empty",Toast.LENGTH_LONG);
             }
 
-        } else if (btnclc.equals("=")) {
+
+        }else if (btnclc.equals("=")) {
             if(mathe)
                 Tv.setText("Syntax Error");
             else if (trig)
-                Tv.setText("Math Error");
+                Tv.setText("Calculator Error 1: Close the trigomic operation");
             else {
                 double resultado = evaluarExpresion(operation,radians);
-                Tv.setText(String.valueOf(resultado));
+                if(resultado!=-1.0){
+                    Tv.setText(String.valueOf((float) resultado));
+                    result = true;
+                }else {
+                    Tv.setText("Math Error");
+                }
+
             }
 
         } else{
@@ -105,10 +126,11 @@ public class MainActivity extends AppCompatActivity {
                 operation.add(btnclc);
                 String nop = Tv.getText().toString() + btnclc;
                 Tv.setText(nop);
-            }else
+            }else{
                 dummy += btnclc;
                 String nop = Tv.getText().toString() + btnclc;
                 Tv.setText(nop);
+            }
         }
     }
 
